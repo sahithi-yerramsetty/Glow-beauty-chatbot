@@ -1,4 +1,5 @@
-langchain==0.3.25
-langchain-openai==0.3.18
-openai==1.82.1
-streamlit==1.45.1
+langchain
+langchain-groq
+langchain-core
+openai
+streamlit
