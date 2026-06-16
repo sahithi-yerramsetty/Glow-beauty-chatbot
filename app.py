@@ -13,7 +13,8 @@ st.markdown("""
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-    .stChatMessage { background: white !important; border-radius: 16px !important; border: 1px solid #f0e6ff !important; margin-bottom: 8px !important; }
+    .stChatMessage { background: white !important; border-radius: 16px !important; border: 1px solid #f0e6ff !important; margin-bottom: 8px !important; word-wrap: break-word !important; overflow-wrap: break-word !important; white-space: normal !important; }
+    .stChatMessage p, .stChatMessage li, .stChatMessage div { word-wrap: break-word !important; overflow-wrap: break-word !important; white-space: normal !important; max-width: 100% !important; }
     section[data-testid="stSidebar"] { background: white !important; border-right: 1px solid #f0e6ff !important; }
     .stButton button { background: linear-gradient(135deg, #c084fc, #f472b6) !important; color: white !important; border: none !important; border-radius: 20px !important; }
     .profile-card { background: linear-gradient(135deg, #fdf4ff, #fff0fb); border: 1px solid #f0d6ff; border-radius: 14px; padding: 1rem; margin-bottom: 1rem; }
