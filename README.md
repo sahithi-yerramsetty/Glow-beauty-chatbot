@@ -17,9 +17,9 @@
 
 ## 🖥️ Screenshots
 
-![GlowBot Chat 1](screenshots/screenshot1.png)
-![GlowBot Chat 2](screenshots/screenshot2.png)
-![GlowBot Chat 3](screenshots/screenshot3.png)
+![GlowBot Chat 1](Screenshots/Screenshot1.png)
+![GlowBot Chat 2](Screenshots/Screenshot2.png)
+![GlowBot Chat 3](Screenshots/Screenshot3.png)
 
 ---
 
