@@ -9,19 +9,135 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-    .stApp { background: linear-gradient(135deg, #fff5f8 0%, #f8f0ff 50%, #f0f8ff 100%); }
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    .stChatMessage { background: white !important; border-radius: 16px !important; border: 1px solid #f0e6ff !important; margin-bottom: 8px !important; word-wrap: break-word !important; overflow-wrap: break-word !important; white-space: normal !important; }
-    .stChatMessage p, .stChatMessage li, .stChatMessage div { word-wrap: break-word !important; overflow-wrap: break-word !important; white-space: normal !important; max-width: 100% !important; }
-    section[data-testid="stSidebar"] { background: white !important; border-right: 1px solid #f0e6ff !important; }
-    .stButton button { background: linear-gradient(135deg, #c084fc, #f472b6) !important; color: white !important; border: none !important; border-radius: 20px !important; }
-    .profile-card { background: linear-gradient(135deg, #fdf4ff, #fff0fb); border: 1px solid #f0d6ff; border-radius: 14px; padding: 1rem; margin-bottom: 1rem; }
-    .profile-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 13px; border-bottom: 1px solid #f5e6ff; }
-    .profile-row:last-child { border-bottom: none; }
-    .profile-label { color: #9f7fc0; font-weight: 500; }
-    .profile-value { color: #4a3060; }
+    :root {
+        --bg-dark: #0b1020;
+        --bg-panel: #141827;
+        --bg-soft: #1b2134;
+        --bg-card: #1d2336;
+        --text-main: #f5edf9;
+        --text-soft: #d7c7ef;
+        --text-muted: #b8a9d8;
+        --border-soft: rgba(196, 144, 234, 0.28);
+        --pink: #f472b6;
+        --purple: #c084fc;
+        --lavender: #b89cff;
+    }
+
+    .stApp {
+        background: radial-gradient(circle at top, rgba(192, 132, 252, 0.15), transparent 30%),
+                    linear-gradient(135deg, #120f1a 0%, #1a1325 45%, #0f172a 100%);
+    }
+
+    #MainMenu, footer, header { visibility: hidden; }
+
+    .block-container {
+        padding-top: 1.5rem;
+        padding-bottom: 2rem;
+        max-width: 1200px;
+    }
+
+    .stChatMessage {
+        background: rgba(26, 31, 45, 0.96) !important;
+        color: var(--text-main) !important;
+        border-radius: 18px !important;
+        border: 1px solid var(--border-soft) !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
+        margin-bottom: 10px !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        white-space: normal !important;
+    }
+
+    .stChatMessage p,
+    .stChatMessage li,
+    .stChatMessage div,
+    .stChatMessage span,
+    .stMarkdown p,
+    .stMarkdown li,
+    .stMarkdown div,
+    .stMarkdown span {
+        color: var(--text-main) !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        white-space: normal !important;
+        max-width: 100% !important;
+    }
+
+    section[data-testid="stSidebar"] {
+        background: rgba(17, 17, 26, 0.97) !important;
+        border-right: 1px solid rgba(196, 144, 234, 0.2) !important;
+    }
+
+    .stTextInput > div > div > input,
+    .stChatInput textarea,
+    .stSelectbox > div > div,
+    .stNumberInput > div > div > input {
+        background: rgba(14, 18, 29, 0.96) !important;
+        color: var(--text-main) !important;
+        border: 1px solid rgba(196, 144, 234, 0.25) !important;
+        border-radius: 12px !important;
+        box-shadow: none !important;
+    }
+
+    .stTextInput label,
+    .stChatInput label,
+    .stSelectbox label,
+    .stNumberInput label {
+        color: var(--text-soft) !important;
+    }
+
+    .stButton button {
+        background: linear-gradient(135deg, var(--purple), var(--pink)) !important;
+        color: #fff !important;
+        border: none !important;
+        border-radius: 16px !important;
+        font-weight: 600 !important;
+        box-shadow: 0 12px 24px rgba(196, 132, 252, 0.25) !important;
+    }
+
+    .stButton button:hover {
+        filter: brightness(1.05) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    .profile-card {
+        background: rgba(29, 35, 54, 0.96);
+        border: 1px solid rgba(196, 144, 234, 0.2);
+        border-radius: 14px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 8px 22px rgba(12, 12, 22, 0.18);
+    }
+
+    .profile-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 7px 0;
+        font-size: 13px;
+        border-bottom: 1px solid rgba(196, 144, 234, 0.12);
+    }
+
+    .profile-row:last-child {
+        border-bottom: none;
+    }
+
+    .profile-label {
+        color: #f7c7e0;
+        font-weight: 600;
+    }
+
+    .profile-value {
+        color: var(--text-main);
+        text-align: right;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        color: var(--text-main) !important;
+    }
+
+    .stAlert {
+        border-radius: 12px !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -49,8 +165,8 @@ with st.sidebar:
     st.divider()
 
     if not st.session_state.api_key_set:
-        st.markdown("**🔑 Enter your OpenAI API Key**")
-        api_key = st.text_input("", type="password", placeholder="sk-...", label_visibility="collapsed")
+        st.markdown("**🔑 Enter your Groq API Key**")
+        api_key = st.text_input("", type="password", placeholder="gsk_...", label_visibility="collapsed")
         if st.button("Start chatting ✨"):
             if api_key.startswith("gsk_"):
                 st.session_state.llm = create_beauty_chatbot(api_key)
@@ -58,10 +174,10 @@ with st.sidebar:
                 st.session_state.messages.append({"role": "assistant", "content": get_greeting()})
                 st.rerun()
             else:
-                st.error("Please enter a valid OpenAI API key (starts with sk-)")
+                st.error("Please enter a valid Groq API key (starts with gsk_)")
         st.markdown("""
-        <div style='background:#fdf4ff;border-radius:10px;padding:10px;margin-top:1rem;font-size:12px;color:#9f7fc0'>
-        💡 Get a free API key at<br><b>platform.openai.com</b><br>New accounts get $5 free credits
+        <div style='background:rgba(29,35,54,0.96);border:1px solid rgba(196,144,234,0.25);border-radius:12px;padding:12px;margin-top:1rem;font-size:12px;color:#f7d4ef;box-shadow:0 8px 20px rgba(0,0,0,0.12)'>
+        💡 Get a free API key at<br><b style='color:#f5edf9'>console.groq.com</b><br>No credit card required
         </div>""", unsafe_allow_html=True)
 
     else:
@@ -76,7 +192,7 @@ with st.sidebar:
             html += "</div>"
             st.markdown(html, unsafe_allow_html=True)
         else:
-            st.markdown("<div style='background:#fdf4ff;border-radius:10px;padding:12px;font-size:13px;color:#9f7fc0;text-align:center'>Your profile builds as we chat 🌸</div>", unsafe_allow_html=True)
+            st.markdown("<div style='background:rgba(29,35,54,0.96);border:1px solid rgba(196,144,234,0.2);border-radius:12px;padding:12px;font-size:13px;color:#f7d4ef;text-align:center;box-shadow:0 8px 18px rgba(0,0,0,0.12)'>Your profile builds as we chat 🌸</div>", unsafe_allow_html=True)
 
         st.divider()
         st.markdown("**Quick questions**")
@@ -119,24 +235,24 @@ with col2:
             <div style='font-size:4rem;margin-bottom:1rem'>🌸</div>
             <h3 style='color:#7c3aed;font-weight:500'>Welcome to GlowBot</h3>
             <p style='color:#9f7fc0;max-width:400px;margin:0 auto'>
-                Enter your OpenAI API key in the sidebar to get personalized beauty recommendations.
+                Enter your Groq API key in the sidebar to get personalized beauty recommendations.
             </p>
         </div>
         <div style='display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:2rem'>
-            <div style='background:white;border-radius:14px;padding:1.2rem;text-align:center;border:1px solid #f0e6ff'>
+            <div style='background:rgba(29,35,54,0.96);border:1px solid rgba(196,144,234,0.2);border-radius:14px;padding:1.2rem;text-align:center;box-shadow:0 8px 20px rgba(0,0,0,0.12)'>
                 <div style='font-size:1.8rem'>🧴</div>
-                <div style='font-weight:500;color:#4a3060;margin-top:6px;font-size:14px'>Skincare Routines</div>
-                <div style='font-size:12px;color:#9f7fc0;margin-top:4px'>AM & PM routines for your skin type</div>
+                <div style='font-weight:600;color:#f7d4ef;margin-top:6px;font-size:14px'>Skincare Routines</div>
+                <div style='font-size:12px;color:#d7c7ef;margin-top:4px'>AM & PM routines for your skin type</div>
             </div>
-            <div style='background:white;border-radius:14px;padding:1.2rem;text-align:center;border:1px solid #f0e6ff'>
+            <div style='background:rgba(29,35,54,0.96);border:1px solid rgba(196,144,234,0.2);border-radius:14px;padding:1.2rem;text-align:center;box-shadow:0 8px 20px rgba(0,0,0,0.12)'>
                 <div style='font-size:1.8rem'>💰</div>
-                <div style='font-weight:500;color:#4a3060;margin-top:6px;font-size:14px'>Budget Picks</div>
-                <div style='font-size:12px;color:#9f7fc0;margin-top:4px'>From $5 drugstore to luxury</div>
+                <div style='font-weight:600;color:#f7d4ef;margin-top:6px;font-size:14px'>Budget Picks</div>
+                <div style='font-size:12px;color:#d7c7ef;margin-top:4px'>From $5 drugstore to luxury</div>
             </div>
-            <div style='background:white;border-radius:14px;padding:1.2rem;text-align:center;border:1px solid #f0e6ff'>
+            <div style='background:rgba(29,35,54,0.96);border:1px solid rgba(196,144,234,0.2);border-radius:14px;padding:1.2rem;text-align:center;box-shadow:0 8px 20px rgba(0,0,0,0.12)'>
                 <div style='font-size:1.8rem'>🔬</div>
-                <div style='font-weight:500;color:#4a3060;margin-top:6px;font-size:14px'>Ingredient Guide</div>
-                <div style='font-size:12px;color:#9f7fc0;margin-top:4px'>What to use and avoid</div>
+                <div style='font-weight:600;color:#f7d4ef;margin-top:6px;font-size:14px'>Ingredient Guide</div>
+                <div style='font-size:12px;color:#d7c7ef;margin-top:4px'>What to use and avoid</div>
             </div>
         </div>""", unsafe_allow_html=True)
 

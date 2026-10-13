@@ -45,10 +45,20 @@ Important rules:
 - If user asks anything NOT beauty related, say: "I'm only trained for beauty advice! Ask me about your skin, hair or makeup instead 🌸"
 - For medical conditions, recommend seeing a dermatologist"""
 
-def detect_focus(history: list, message: str) -> str:
-    all_text = message.lower()
+def build_search_context(history: list, message: str) -> str:
+    parts = []
     for h in history:
-        all_text += " " + h["content"].lower()
+        if isinstance(h, dict) and h.get("role") == "user":
+            parts.append(h.get("content", ""))
+    parts.append(message)
+    return " ".join(part for part in parts if part).strip()
+
+
+def detect_focus(history: list, message: str) -> str:
+    all_text = " ".join([
+        message.lower(),
+        *[h["content"].lower() for h in history if isinstance(h, dict) and "content" in h]
+    ])
 
     hair_words = ["hair", "scalp", "frizz", "dandruff", "shampoo", "curly", "wavy", "coily", "hair loss", "conditioner", "dry shampoo"]
     skin_words = ["skin", "face", "acne", "pores", "moisturizer", "serum", "cleanser", "dark spots", "oily skin", "dry skin", "sunscreen", "spf"]
@@ -58,25 +68,31 @@ def detect_focus(history: list, message: str) -> str:
     is_skin = any(w in all_text for w in skin_words)
     is_makeup = any(w in all_text for w in makeup_words)
 
-    if is_makeup and not is_hair and not is_skin:
-        return "makeup"
-    elif is_hair and not is_skin and not is_makeup:
-        return "haircare"
-    elif is_skin and not is_hair and not is_makeup:
+    if is_skin:
         return "skincare"
+    if is_hair:
+        return "haircare"
+    if is_makeup:
+        return "makeup"
     return None
 
-def create_beauty_chatbot(api_key: str):
+DEFAULT_GROQ_MODEL = "openai/gpt-oss-20b"
+
+
+def create_beauty_chatbot(api_key: str, model_name: str = None):
     os.environ["GROQ_API_KEY"] = api_key
+    selected_model = model_name or os.getenv("GROQ_MODEL", DEFAULT_GROQ_MODEL)
     return ChatGroq(
-        model="llama-3.3-70b-versatile",
+        model=selected_model,
         temperature=0.7,
-        max_tokens=1500
+        max_tokens=2000
     )
+
 
 def chat(llm, message: str, history: list) -> str:
     product_type = detect_focus(history, message)
-    results = search_products(query=message, product_type=product_type, k=6)
+    search_query = build_search_context(history, message)
+    results = search_products(query=search_query, product_type=product_type, k=6)
 
     if results:
         label = f"({product_type.upper()})" if product_type else "(ALL)"

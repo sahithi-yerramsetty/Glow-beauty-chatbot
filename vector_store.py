@@ -66,10 +66,15 @@ def load_products(filepath=PRODUCTS_PATH):
     return _PRODUCTS_CACHE
 
 def normalize_brand(query: str):
-    """Case-insensitive brand detection."""
+    """Case-insensitive brand detection with word boundaries."""
     query_lower = query.lower().strip()
+    if not query_lower:
+        return None
+
     for alias, brand in BRAND_ALIASES.items():
-        if alias in query_lower:
+        alias_lower = alias.lower()
+        pattern = r"(?<![a-z0-9])" + re.escape(alias_lower) + r"(?![a-z0-9])"
+        if re.search(pattern, query_lower):
             return brand
     return None
 
@@ -98,80 +103,122 @@ def detect_budget(query: str):
 
     return None, None
 
+def _normalize_term(term: str) -> str:
+    term = term.lower().strip()
+    if not term:
+        return term
+    if len(term) > 5 and term.endswith("ies"):
+        return term[:-3] + "y"
+    if len(term) > 3 and term.endswith("s") and not term.endswith("ss"):
+        return term[:-1]
+    return term
+
+
 def search_products(query: str, product_type: str = None, k: int = 6):
-    """Smart keyword search — case insensitive, cached, with budget range."""
+    """Smart keyword search — case insensitive, cached, with budget range and relevance filtering."""
     products = load_products()
 
-    # Lowercase everything for comparison
     query_lower = query.lower().strip()
-    query_words = set(query_lower.split())
+    if not query_lower:
+        return []
 
-    # Detect budget and brand
+    beauty_terms = {
+        "skin", "skincare", "face", "serum", "serums", "moisturizer", "cleanser", "sunscreen",
+        "spf", "hair", "shampoo", "conditioner", "frizz", "dandruff", "makeup", "foundation",
+        "blush", "lipstick", "lip", "mascara", "eyeshadow", "concealer", "primer", "acne",
+        "redness", "dark", "spots", "hydration", "dryness", "oily", "dry", "sensitive",
+        "curly", "wavy", "coily", "scalp", "retinol", "niacinamide", "vitamin", "cream"
+    }
+
+    query_tokens = {
+        _normalize_term(word)
+        for word in re.findall(r"[a-z0-9']+", query_lower)
+        if len(word) > 2
+    }
+    query_tokens -= {"what", "when", "where", "why", "how", "which", "that", "this", "with", "from", "under", "between", "any", "thing", "there", "today", "anything", "cheaper", "price", "budget", "products", "product"}
+
+    if not (query_tokens & beauty_terms) and not normalize_brand(query_lower):
+        return []
+
     min_price, max_price = detect_budget(query_lower)
     detected_brand = normalize_brand(query_lower)
 
     scored = []
     for p in products:
-        # Filter by type
         if product_type and p.get("type") != product_type:
             continue
 
         price = p.get("price", 999)
-
-        # Filter by budget
         if max_price is not None and price > max_price:
             continue
         if min_price is not None and min_price > 0 and price < min_price:
             continue
 
-        score = 0
-
-        # Lowercase ALL product fields for comparison
-        brand_lower = p.get("brand", "").lower()
-        name_lower = p.get("name", "").lower()
-        cat_lower = p.get("category", "").lower()
-        desc_lower = p.get("description", "").lower()
+        brand_lower = str(p.get("brand", "")).lower()
+        name_lower = str(p.get("name", "")).lower()
+        cat_lower = str(p.get("category", "")).lower()
+        desc_lower = str(p.get("description", "")).lower()
         concerns_text = " ".join(p.get("concerns", [])).lower()
         ingredients_text = " ".join(p.get("ingredients", [])).lower()
-        skin_hair = " ".join(p.get("skin_type", p.get("hair_type", []))).lower()
+        skin_hair = " ".join(p.get("skin_type", []) + p.get("hair_type", [])).lower()
 
-        # Brand match — highest priority
+        normalized_text = " ".join([
+            brand_lower, name_lower, cat_lower, desc_lower, concerns_text, ingredients_text, skin_hair
+        ])
+
+        matched_words = []
+        for word in query_tokens:
+            normalized_word = word
+            if normalized_word in normalized_text:
+                matched_words.append(normalized_word)
+
+        if not matched_words and not detected_brand:
+            continue
+
+        score = 0
         if detected_brand and detected_brand.lower() in brand_lower:
+            score += 25
+
+        if product_type and p.get("category", "").lower() == product_type:
             score += 10
 
-        # Category match
-        if cat_lower in query_lower or query_lower in cat_lower:
-            score += 5
+        if "serum" in query_tokens and "serum" in cat_lower:
+            score += 25
+        if "serum" in query_tokens and "serum" in name_lower:
+            score += 15
+        if "moisturizer" in query_tokens and "moisturizer" in cat_lower:
+            score += 20
+        if "sunscreen" in query_tokens and "sunscreen" in cat_lower:
+            score += 20
 
-        # Word matches
-        for word in query_words:
-            if len(word) > 2:
-                if word in brand_lower:    score += 4
-                if word in name_lower:     score += 3
-                if word in cat_lower:      score += 3
-                if word in concerns_text:  score += 2
-                if word in ingredients_text: score += 2
-                if word in skin_hair:      score += 2
-                if word in desc_lower:     score += 1
+        for word in matched_words:
+            if word in brand_lower:
+                score += 12
+            if word in name_lower:
+                score += 10
+            if word in cat_lower:
+                score += 9
+            if word in concerns_text:
+                score += 5
+            if word in ingredients_text:
+                score += 5
+            if word in skin_hair:
+                score += 5
+            if word in desc_lower:
+                score += 2
 
-        # Rating boost
-        rating = p.get("rating", 3.0)
-        score += (rating - 3.0) * 0.5
+        rating = float(p.get("rating", 0) or 0)
+        score += max(0.0, (rating - 3.0)) * 1.5
 
-        if score > 0:
-            scored.append((score, p))
+        if score <= 0:
+            continue
 
-    # Sort by relevance score
-    scored.sort(key=lambda x: x[0], reverse=True)
+        scored.append((score, price, p))
 
-    # If price range — also sort premium first within top results
-    if min_price and min_price > 0:
-        scored.sort(key=lambda x: x[1].get("price", 0), reverse=True)
-
-    top = scored[:k]
+    scored.sort(key=lambda x: (-x[0], x[1]))
 
     results = []
-    for score, p in top:
+    for score, price, p in scored[:k]:
         content = f"""Product: {p['name']}
 Brand: {p['brand']}
 Type: {p['type']}
