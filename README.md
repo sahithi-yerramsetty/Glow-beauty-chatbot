@@ -1,17 +1,18 @@
 # ✨ GlowBot — AI Beauty Advisor Chatbot
 
-> A personalized AI beauty advisor built with **LangChain + Groq (Llama 3.3) + Streamlit** — recommends real skincare, haircare and makeup products based on your skin type, hair type, concerns and budget.
+> A polished AI beauty advisor built with **LangChain + Groq + Streamlit**. It recommends real beauty products based on the user's skin type, hair type, concern, and budget while keeping the experience elegant and highly readable in a dark premium UI.
 
 ---
 
 ## 🌸 What GlowBot Does
 
-- 🧴 **Skincare advice** — routines, serums, moisturizers, sunscreens for your skin type
-- 💇 **Haircare advice** — shampoos, conditioners, treatments for your hair type
-- 💄 **Makeup recommendations** — foundation, blush, mascara and more
-- 💰 **Budget-aware** — suggests products within your price range (from $3 drugstore to luxury)
-- 🔬 **Ingredient explainer** — tells you what to look for and what to avoid
-- 🧠 **Memory** — remembers your profile throughout the conversation
+- 🧴 **Skincare advice** — routines, serums, moisturizers, and sunscreens for your skin type
+- 💇 **Haircare advice** — shampoos, conditioners, treatments, and scalp care tips
+- 💄 **Makeup recommendations** — foundation, blush, lipstick, mascara and more
+- 💰 **Budget-aware suggestions** — price filtering from drugstore to luxury picks
+- 🔬 **Ingredient-aware recommendations** — recommends products based on concerns like acne, dryness, dullness, and frizz
+- 🧠 **Conversation memory** — remembers your beauty profile and context across chat turns
+- 🎨 **Professional dark UI** — premium, readable design built for an elevated beauty-brand experience
 
 ---
 
@@ -27,11 +28,11 @@
 
 | Tool | Purpose |
 |---|---|
-| Python | Core language |
-| LangChain | LLM orchestration + memory |
-| Groq (Llama 3.3 70B) | Free AI model API |
-| Streamlit | Chat UI |
-| JSON + Keyword Search | 285 product database with smart search |
+| Python | Core application language |
+| LangChain | LLM orchestration and message handling |
+| Groq | LLM inference via Groq API |
+| Streamlit | Chat interface and dark premium UI |
+| JSON + smart keyword/ranking search | Beauty product retrieval with real product filtering |
 
 ---
 
@@ -48,15 +49,15 @@ cd Glow-beauty-chatbot
 pip install -r requirements.txt
 ```
 
-### Step 3 — Get a FREE Groq API Key (2 minutes)
+### Step 3 — Get a Groq API Key
 
 1. Go to **[console.groq.com](https://console.groq.com)**
-2. Click **Sign Up** — Google login works
-3. Click **API Keys** in left sidebar
-4. Click **Create API Key** → name it → click **Submit**
-5. **Copy the key** — starts with `gsk_`
+2. Sign in or create an account
+3. Open **API Keys** from the sidebar
+4. Create a new key and copy it
+5. Use the key in the app sidebar
 
-> 💡 Groq is completely **free** — no credit card, no limits for personal use!
+> 💡 The app is configured to use a valid Groq model and works with the current supported Groq endpoint setup.
 
 ### Step 4 — Run the app
 ```bash
@@ -65,11 +66,11 @@ streamlit run app.py
 
 ### Step 5 — Open in browser
 
-Streamlit opens automatically at **http://localhost:8501**
+Streamlit usually opens at **http://localhost:8506**.
 
-1. Paste your `gsk_` API key in the **sidebar**
+1. Paste your `gsk_` API key in the sidebar
 2. Click **Start chatting ✨**
-3. Tell GlowBot your skin type, hair type, concern and budget!
+3. Ask for skincare, haircare, makeup, or budget-friendly recommendations
 
 ---
 
@@ -88,13 +89,13 @@ Streamlit opens automatically at **http://localhost:8501**
 
 ## 📦 Product Database
 
-285 real products across 3 categories:
+A curated beauty product catalog across skincare, haircare, and makeup.
 
-| Category | Count | Brands |
+| Category | Count | Example Brands |
 |---|---|---|
-| 🧴 Skincare | 103 | CeraVe, La Roche-Posay, The Ordinary, Aveeno, Paula's Choice, EltaMD |
-| 💇 Haircare | 71 | OUAI, K18, Kerastase, Moroccanoil, Redken, Mielle, Crown Affair, Living Proof |
-| 💄 Makeup | 111 | Maybelline, NYX, e.l.f., Milani, Wet n Wild, Physicians Formula |
+| 🧴 Skincare | 103 | CeraVe, La Roche-Posay, The Ordinary, Aveeno |
+| 💇 Haircare | 71 | OUAI, K18, Kerastase, Moroccanoil, Mielle |
+| 💄 Makeup | 111 | Maybelline, NYX, e.l.f., Milani, Wet n Wild |
 
 ---
 
@@ -117,30 +118,30 @@ Glow-beauty-chatbot/
 ```
 User types message
         ↓
-detect_focus() — skincare / haircare / makeup?
+detect_focus() — skincare / haircare / makeup / combination
         ↓
-search_products() — keyword search across 285 products
+build_search_context() — includes chat history and latest user prompt
         ↓
-Budget filter — only products within price range
+search_products() — smart beauty-intent search with brand + budget filters
         ↓
-Brand detection — "ordinary" → "The Ordinary"
+Ranking logic — relevance, category match, ingredients, concerns, rating
         ↓
-Top 6 products injected into LLM prompt (RAG)
+Top recommendations injected into the LLM prompt
         ↓
-Groq Llama 3.3 generates personalized response
+Groq model generates a styled, personalized beauty response
         ↓
-GlowBot replies with real product recommendations ✨
+GlowBot replies with relevant product recommendations ✨
 ```
 
 ---
 
 ## 🔮 Future Improvements
 
-- [ ] ChromaDB vector embeddings for semantic search
-- [ ] User account system to save beauty profiles
-- [ ] Image upload — analyze skin from selfie
-- [ ] Azure deployment with Cosmos DB product storage
-- [ ] Real-time product pricing from Sephora/Ulta API
+- [ ] Add semantic/vector search for richer product matching
+- [ ] Save beauty profiles per user account
+- [ ] Allow skin selfie analysis and image-based recommendations
+- [ ] Deploy with cloud hosting and persistent backend services
+- [ ] Integrate live retailer pricing and stock data
 
 ---
 
